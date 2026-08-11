@@ -156,3 +156,64 @@ Given that `analysis`↔`hot_take` is a genuinely hard boundary even for a human
 annotator (see §3), 100% agreement isn't the bar; the bar is being right *more
 consistently than a quick human skim*, which the "good enough" floor is calibrated to
 approximate.
+
+## 7. AI tool plan
+
+This project has no code-generation surface worth planning around — the notebook
+pipeline is fixed and small. The places an AI tool actually changes the outcome are
+upstream and downstream of the model: sharpening the label definitions before
+annotation, optionally speeding up annotation itself, and reading the error list
+after evaluation. Each use is scoped below, including how it'll be disclosed.
+
+**1. Label stress-testing (before annotation).**
+Before doing the full 200-row labeling pass, prompt an LLM (e.g. Claude or the
+Groq model already wired up for the baseline) with the label definitions and edge
+case rules from §2–3 and ask it to generate 5–10 short r/soccer-style posts/comments
+deliberately written to sit on the `analysis`/`hot_take` boundary (and a couple on
+the `hot_take`/`reaction` boundary). Manually label the generated set using the
+rules in §3 alone, with no peeking at how the model intended them.
+
+- **Pass/fail check:** if any generated example can't be cleanly assigned using the
+  §3 rules — i.e. the "cite at least one concrete, checkable detail" test and the
+  absolutist-language signal don't resolve it — that's a sign the rule, not the
+  example, is underspecified. Tighten §3 and re-run the stress test before starting
+  real annotation, not after.
+- This is a one-time calibration step; it doesn't feed training data directly (the
+  generated examples are synthetic and not representative of real r/soccer phrasing
+  frequency), so they're discarded after the definitions are finalized, not added to
+  `raw_posts.csv`.
+
+**2. Annotation assistance (during labeling).**
+Decision: **no LLM pre-labeling for this pass.** With only ~200 rows and a known
+hard boundary (§3) that the annotation rule itself was only discovered by hand after
+~30 rows, pre-labeling risks anchoring the human labeler toward the model's
+`analysis`/`hot_take` split rather than applying the §3 rule independently — the
+exact failure mode this dataset is most exposed to, since that boundary is also the
+one the zero-shot Groq baseline is separately being evaluated on (using it to
+pre-label would contaminate the baseline/fine-tuned comparison in §5).
+
+- If this decision is revisited for a larger future pull (e.g. under §4's
+  expansion plan), any pre-labeling would use the same Groq zero-shot setup as the
+  baseline, and pre-labeled rows would be marked with an extra `prelabeled_by`
+  column in the raw CSV (value = model name, blank for hand-first labels) so the
+  AI-usage disclosure can state exactly which rows were touched by a model before a
+  human saw them.
+
+**3. Failure analysis (after evaluation).**
+Once the fine-tuned model's test-set predictions are in, pull the misclassified rows
+(predicted label ≠ true label, from the confusion matrix in §5) into a list of
+`(text, true_label, predicted_label)` tuples and give that list to an LLM asking it
+to cluster the errors and describe any patterns — e.g. "these are short comments
+with no evidence markers," "these all contain absolutist language but were labeled
+`analysis`," or "these are sarcasm cases where tone flips the intended read."
+
+- **What to look for:** whether errors cluster on the known hard boundary
+  (`analysis`↔`hot_take`, per §3) versus being spread evenly, and whether any
+  cluster suggests a labeling error (mislabeled ground truth) rather than a model
+  error.
+- **Verification:** treat the AI's clustering as a hypothesis, not a finding —
+  manually re-read every example in a claimed cluster against the §3 rule before
+  citing it in the write-up. Only patterns that hold up under that manual re-read
+  (and, for suspected ground-truth errors, get corrected in the CSV with a note) go
+  into the final evaluation report; the rest are discarded as false patterns fitted
+  to a small error set.
