@@ -7,13 +7,8 @@
 r/soccer is one of the largest sport-specific subreddits (2M+ members) and has an
 unusually high ratio of *discourse* to *content-sharing* for a sports subreddit — a
 huge share of the top posts and comment threads are people arguing about referee
-decisions, tactics, transfers, and manager competence rather than just posting
-highlight clips. That argument culture is exactly what makes it a good fit for a
-text classification task: on any given match thread you'll find (a) someone doing
-genuine tactical breakdown, (b) someone firing off an exaggerated, unfalsifiable
-opinion for reaction/points, and (c) someone just reacting emotionally to what
-happened. Those three registers are visually indistinguishable in a feed but read
-very differently once you actually parse the sentence — which is the whole point of
+decisions, tactics, transfers, and manager competence rather than just posting highlight clips. That argument culture is exactly what makes it a good fit for a text classification task: on any given match thread you'll find (a) someone doing genuine tactical breakdown, (b) someone firing off an exaggerated, unfalsifiable
+opinion for reaction/points, and (c) someone just reacting emotionally to what happened. Those three registers are visually indistinguishable in a feed but read very differently once you actually parse the sentence — which is the whole point of
 building a classifier instead of just eyeballing it.
 
 The name "TakeMeter" reflects the goal: given a post/comment from r/soccer, score how
@@ -93,6 +88,10 @@ real analysis/hot-take discourse lives in the comment threads.
   `reaction` = 90, `hot_take` = 81, `analysis` = 29 — `analysis` is underrepresented
   as expected, since deep tactical breakdowns are rarer than one-liner
   reactions/takes in a fast-scrolling comment section.
+- **Update:** After augmenting with an LLM pre-labeling pass on a new "Match Thread" dataset (`comments_1s8zfan.json`), the dataset expanded to 433 rows. The updated distribution is:
+  `hot_take` = 218 (50.3%), `reaction` = 131 (30.3%), `analysis` = 84 (19.4%). 
+  *(Note: Percentages were calculated by tallying the `label` column in `data/raw_posts.csv` and dividing each class count by the total 433 labeled rows. Because no single label accounts for more than 70% of the dataset, it passes the heuristic check for severe class imbalance.)*
+  The target floor of 40+ examples per label has been met.
 
 **If a label is underrepresented after 200 examples (as `analysis` currently is):**
 1. Re-scrape with a source shift rather than pulling more of the same top/year
