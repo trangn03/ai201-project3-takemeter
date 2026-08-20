@@ -1,0 +1,147 @@
+---CELL 1 markdown ---
+# TakeMeter — Fine-Tuning Starter Notebook
+### AI201 · Project 3
+
+This notebook walks you through fine-tuning a text classifier on your annotated dataset and comparing it to a zero-shot baseline.
+
+**What this notebook does for you (infrastructure):**
+- Tokenizes your dataset and prepares it for training
+- Runs the fine-tuning pipeline with DistilBERT
+- Computes evaluation metrics and generates a confusion matrix
+- Runs the Groq baseline and compares both models
+
+**What you do (the actual work):**
+- Collect and annotate your 200+ examples (done before opening this notebook)
+- Define your label map and upload your CSV
+- Write your Groq classification prompt using your label definitions
+- Analyze the output and write your evaluation report
+
+---
+**Before you start:** Make sure you are using a T4 GPU runtime.  
+Go to **Runtime → Change runtime type → T4 GPU**, then click Save.
+
+---CELL 2 code ---
+# Install any dependencies not pre-installed on Colab
+!pip install -q groq python-dotenv
+print("✅ Dependencies ready")
+
+---CELL 20 markdown ---
+---
+## Section 5: Baseline Classifier (Groq)
+
+Runs your zero-shot baseline using `llama-3.3-70b-versatile`.  
+You need to write the classification prompt using your label definitions.
+
+---CELL 21 code ---
+!pip install -q groq
+from groq import Groq
+
+# ── TODO: Add your Groq API key ───────────────────────────────────────────
+# Recommended: use Colab Secrets so your key is never visible in the notebook.
+#   1. Click the 🔑 icon in the left sidebar ("Secrets")
+#   2. Add a secret named GROQ_API_KEY with your key as the value
+#   3. Enable notebook access for the secret
+#
+# Then uncomment Option A below (and delete Option B).
+#
+# Option A — Colab Secrets (recommended):
+from google.colab import userdata
+GROQ_API_KEY = userdata.get("GROQ_API_KEY")
+#
+# Option B — paste directly (do not commit to GitHub):
+#GROQ_API_KEY = "your_groq_api_key_here"
+
+assert GROQ_API_KEY, (
+    "GROQ_API_KEY not set — add it in the Colab Secrets panel (🔑, left "
+    "sidebar) and enable notebook access for this notebook, or use Option B above."
+)
+
+client = Groq(api_key=GROQ_API_KEY)
+print("✅ Groq client initialized")
+
+---CELL 22 code ---
+SYSTEM_PROMPT = """
+You are classifying posts from a soccer (football) community.
+Assign each post to exactly one of the following categories.
+
+analysis: In-depth discussion, statistics, tactical breakdowns, or news reports supported by evidence.
+Example: "Looking at the heatmaps, the fullbacks are pushing so high that the center backs are being exposed on every counter-attack."
+
+hot_take: Provocative, controversial, or highly opinionated statements intended to spark debate, often lacking deep evidence.
+Example: "Mbappe is overrated and won't win a Ballon d'Or until he leaves for a more competitive league."
+
+reaction: Emotional outbursts, short comments on live events, memes, or brief expressions of excitement/frustration.
+Example: "GOOOOAL! WHAT A STRIKE! I can't believe he scored that from 30 yards out!!"
+
+Respond with ONLY the label name.
+Do not explain your reasoning.
+
+Valid labels:
+analysis
+hot_take
+reaction
+"""
+
+print("Prompt length:", len(SYSTEM_PROMPT), "characters")
+
+---CELL 23 code ---
+def classify_with_groq(text):
+    """Classify a single post. Returns a label string or None if unparseable."""
+    try:
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-120b",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Classify this post:\n\n{text}"},
+            ],
+            temperature=0,
+            max_tokens=1024,
+            reasoning_effort="low",
+        )
+        # Clean the response: lowercase and remove common punctuation/markdown
+        raw = response.choices[0].message.content.strip().lower().replace("*", "").replace(".", "")
+
+        # Match the model's output to a label
+        for label in sorted(LABEL_MAP, key=len, reverse=True):
+            if label in raw:
+                return label
+
+        finish_reason = response.choices[0].finish_reason
+        print(f"⚠️ Unparseable raw response: '{raw}' (finish_reason={finish_reason})")
+        return None
+    except Exception as e:
+        print(f"API error: {e}")
+        return None
+
+# Run baseline on test set
+print(f"Running baseline on {len(test_df)} examples...")
+
+baseline_preds = []
+for i, (_, row) in enumerate(test_df.iterrows()):
+    pred = classify_with_groq(row["text"])
+    baseline_preds.append(pred)
+    if (i + 1) % 10 == 0:
+        print(f"  {i+1}/{len(test_df)} complete...")
+    time.sleep(0.2) # Increased delay for stability
+
+none_count = baseline_preds.count(None)
+if none_count > 0:
+    print(f"\n⚠️ {none_count} responses could not be parsed. Check the logs above for examples.")
+else:
+    print("\n✅ All responses parsed successfully!")
+
+---CELL 26 code ---
+print("=" * 50)
+print("RESULTS COMPARISON")
+print("=" * 50)
+print(f"{'Model':<35} {'Accuracy':>8}")
+print("-" * 45)
+print(f"{'Zero-shot baseline (Groq)':<35} {bl_accuracy:>8.3f}")
+print(f"{'Fine-tuned DistilBERT':<35} {ft_accuracy:>8.3f}")
+print("-" * 45)
+delta = ft_accuracy - bl_accuracy
+direction = "improvement" if delta >= 0 else "regression"
+print(f"\nFine-tuning {direction}: {abs(delta):.3f}")
+print()
+print("Use these numbers in your README evaluation report.")
+
