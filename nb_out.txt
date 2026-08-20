@@ -1,0 +1,234 @@
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/143.7 kB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m143.7/143.7 kB[0m [31m6.9 MB/s[0m eta [36m0:00:00[0m
+[?25h✅ Dependencies ready
+
+✅ Imports complete
+PyTorch version: 2.11.0+cu128
+GPU available: True
+GPU: Tesla T4
+
+Labels: {'analysis': 0, 'hot_take': 1, 'reaction': 2}
+Number of labels: 3
+
+Mounted at /content/drive
+
+✅ Imports complete
+PyTorch version: 2.11.0+cu128
+GPU available: True
+GPU: Tesla T4
+
+Columns: ['text', 'label', 'notes', 'prelabeled_by']
+Total examples: 433
+
+Label distribution:
+label
+hot_take    218
+reaction    131
+analysis     84
+Name: count, dtype: int64
+
+✅ All labels match your LABEL_MAP
+
+Train: 303 examples
+Validation: 65 examples
+Test: 65 examples
+
+Train label distribution:
+label
+hot_take    152
+reaction     92
+analysis     59
+Name: count, dtype: int64
+
+Test label distribution:
+label
+hot_take    33
+reaction    19
+analysis    13
+Name: count, dtype: int64
+
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+✅ Tokenization complete
+Sample keys: ['text', 'labels', 'input_ids', 'token_type_ids', 'attention_mask']
+
+[transformers] [1mDistilBertForSequenceClassification LOAD REPORT[0m from: distilbert-base-uncased
+Key                     | Status     | 
+------------------------+------------+-
+vocab_transform.bias    | UNEXPECTED | 
+vocab_layer_norm.bias   | UNEXPECTED | 
+vocab_layer_norm.weight | UNEXPECTED | 
+vocab_projector.bias    | UNEXPECTED | 
+vocab_transform.weight  | UNEXPECTED | 
+classifier.bias         | MISSING    | 
+pre_classifier.weight   | MISSING    | 
+pre_classifier.bias     | MISSING    | 
+classifier.weight       | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+
+✅ Model loaded: distilbert-base-uncased
+Output labels: 3
+
+Starting fine-tuning... (5–15 minutes on T4 GPU)
+
+
+✅ Fine-tuning complete
+
+Running inference on test set...
+
+
+🎯 Fine-tuned model accuracy: 0.538
+
+Per-class metrics (fine-tuned model):
+              precision    recall  f1-score   support
+
+    analysis       0.00      0.00      0.00        13
+    hot_take       0.53      0.94      0.68        33
+    reaction       0.57      0.21      0.31        19
+
+    accuracy                           0.54        65
+   macro avg       0.37      0.38      0.33        65
+weighted avg       0.44      0.54      0.44        65
+
+
+✅ Saved: confusion_matrix.png  →  commit this to your repo and include in README
+
+Wrong predictions: 30 / 65
+
+--- #1 ---
+Text:      I SAID JOHNNY, YOU'RE KILLING ME HERE GIANNI, YOU GOTTA DO SOMETHING GIANNII
+True:      reaction
+Predicted: hot_take  (confidence: 0.55)
+
+--- #2 ---
+Text:      Can't even tell if this refers to Infantino or Trump
+True:      reaction
+Predicted: hot_take  (confidence: 0.56)
+
+--- #3 ---
+Text:      This specific controversy is probably going to draw a lot more attention to the game in American media and cause more Americans to tune in out of curiosity (or more people to hate-watch or something).
+True:      analysis
+Predicted: hot_take  (confidence: 0.54)
+
+--- #4 ---
+Text:      The definition of a system player but even now, he can’t get a start with City. He should be hitting his prime but the opposite is happening, he is regressing towards it
+True:      analysis
+Predicted: hot_take  (confidence: 0.60)
+
+--- #5 ---
+Text:      what a waste of 45 pounds fucking hell
+True:      reaction
+Predicted: hot_take  (confidence: 0.42)
+
+--- #6 ---
+Text:      Ireland winning goal and end of match with Irish commentary
+True:      hot_take
+Predicted: reaction  (confidence: 0.50)
+
+--- #7 ---
+Text:      Meh game.
+
+I was throughly unimpressed with Anderson. His passing, technique and movement was completely mediocre. I lost count of the number of times he struggled to get the ball out from under his f...
+True:      analysis
+Predicted: hot_take  (confidence: 0.55)
+
+--- #8 ---
+Text:      Congratulations to Japan, I enjoyed watching them more than England for a lot of the game.
+
+Nakamura has the same facial expression as Brennan Johnson.
+True:      reaction
+Predicted: hot_take  (confidence: 0.60)
+
+--- #9 ---
+Text:      England were crap, Japan were good.
+
+Completely predictably we looked much better when we had an actual striker and wingers on instead of 4 players who all want to play in the same space.
+
+Main conclu...
+True:      analysis
+Predicted: hot_take  (confidence: 0.59)
+
+--- #10 ---
+Text:      THANK YOU FOR YOUR ATTENTION TO THIS MATTER
+True:      reaction
+Predicted: hot_take  (confidence: 0.41)
+
+--- #11 ---
+Text:      I mean, Japan scored a lovely goal.
+True:      reaction
+Predicted: hot_take  (confidence: 0.48)
+
+--- #12 ---
+Text:      "you have to call the president of soccer and get him to do something."
+True:      reaction
+Predicted: hot_take  (confidence: 0.55)
+
+--- #13 ---
+Text:      Games from 4 years ago are a meaningless for current form surely.
+
+If it was one game it wouldn't be a problem but Tuchel hasn't won any of the 3 games he's played against top 20 nations. Any England ...
+True:      analysis
+Predicted: hot_take  (confidence: 0.57)
+
+--- #14 ---
+Text:      Hes lacking football intelligence to play any role beyond the one Pep and him have developed at City.
+
+Hes basically the equivalent of a winger who gets his head down and charges. He cant recontextual...
+True:      analysis
+Predicted: hot_take  (confidence: 0.59)
+
+--- #15 ---
+Text:      It's ridiculous tournaments don't have a red card appeal process but every single top flight football league I'm aware of does.
+True:      analysis
+Predicted: hot_take  (confidence: 0.60)
+
+
+✅ Groq client initialized
+
+Prompt length: 1867 characters
+
+Running baseline on 65 examples...
+  10/65 complete...
+  20/65 complete...
+  30/65 complete...
+  40/65 complete...
+  50/65 complete...
+  60/65 complete...
+
+✅ All responses parsed successfully!
+
+🎯 Baseline accuracy: 0.585  (evaluated on 65/65 parseable responses)
+
+Per-class metrics (baseline):
+              precision    recall  f1-score   support
+
+    analysis       0.71      0.38      0.50        13
+    hot_take       0.71      0.52      0.60        33
+    reaction       0.47      0.84      0.60        19
+
+    accuracy                           0.58        65
+   macro avg       0.63      0.58      0.57        65
+weighted avg       0.64      0.58      0.58        65
+
+
+==================================================
+RESULTS COMPARISON
+==================================================
+Model                               Accuracy
+---------------------------------------------
+Zero-shot baseline (Groq)              0.585
+Fine-tuned DistilBERT                  0.538
+---------------------------------------------
+
+Fine-tuning regression: 0.046
+
+Use these numbers in your README evaluation report.
+
+✅ Files ready to download:
+   evaluation_results.json  — metrics for your README
+   confusion_matrix.png     — include in your README
+
+Download via: Files panel (📁) on the left → right-click → Download
